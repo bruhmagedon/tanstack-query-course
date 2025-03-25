@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { todoListApi } from "../api/api";
 import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -14,6 +14,7 @@ export const TodoList = () => {
   } = useQuery({
     queryKey: ["tasks", "list", { page }],
     queryFn: (meta) => todoListApi.getTodoList({ page }, meta),
+    placeholderData: keepPreviousData,
   });
 
   if (isPending) {
