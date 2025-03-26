@@ -1,7 +1,8 @@
 export type TodoDto = {
-  id: number;
+  id: string;
   text: string;
   done: boolean;
+  userId: string;
 };
 
 // Возможность переиспользовать в других модулях за счет T

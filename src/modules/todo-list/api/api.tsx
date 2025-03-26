@@ -4,13 +4,28 @@ import type { PaginatedResult, TodoDto } from "../types/todo-dto";
 
 // новое апи (без getTodoList, через fetch-instance)
 export const todoListApi = {
+  baseKey: "tasks",
   // Здесь определяется часть функционала, которая не нужна в компонентах (best practice)
   // Можно хранить вместе queryOptions и api (getTodoList) в одном объекте, а можно и разделять
-  getTodoListQueryOptions: ({ page }: { page: number }) => {
+  getTodoListPaginateQueryOptions: ({ page }: { page: number }) => {
     return queryOptions({
-      queryKey: ["tasks", "list", { page }],
+      queryKey: [todoListApi.baseKey, "list", { page }],
       queryFn: (meta) =>
-        fetchApiInstance(`/tasks?_page=${page}&_per_page=10`, {
+        fetchApiInstance<PaginatedResult<TodoDto>>(
+          `/tasks?_page=${page}&_per_page=10`,
+          {
+            signal: meta.signal,
+          }
+        ),
+    });
+  },
+
+  // Без пагинации
+  getTodoListQueryOptions: () => {
+    return queryOptions({
+      queryKey: [todoListApi.baseKey, "list"],
+      queryFn: (meta) =>
+        fetchApiInstance<TodoDto[]>("/tasks", {
           signal: meta.signal,
         }),
     });
@@ -18,7 +33,7 @@ export const todoListApi = {
 
   getTodoListInfiniteQueryOptions: () => {
     return infiniteQueryOptions({
-      queryKey: ["tasks", "list"],
+      queryKey: [todoListApi.baseKey, "list"],
       queryFn: (meta) =>
         fetchApiInstance<PaginatedResult<TodoDto>>(
           `/tasks?_page=${meta.pageParam}&_per_page=10`,
@@ -29,6 +44,25 @@ export const todoListApi = {
       initialPageParam: 1,
       getNextPageParam: (result) => result.next,
       select: (result) => result.pages.flatMap((page) => page.data),
+    });
+  },
+
+  // Для мутаций нет аналога queryOptions
+  createTodo: (data: TodoDto) => {
+    return fetchApiInstance<TodoDto>("/tasks", {
+      method: "POST",
+      json: data,
+    });
+  },
+  updateTodo: (id: string, data: Partial<TodoDto>) => {
+    return fetchApiInstance<TodoDto>(`/tasks/${id}`, {
+      method: "PATCH",
+      json: data,
+    });
+  },
+  deleteTodo: (id: string) => {
+    return fetchApiInstance(`/tasks/${id}`, {
+      method: "DELETE",
     });
   },
 };

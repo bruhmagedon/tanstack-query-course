@@ -6,6 +6,7 @@ class ApiError extends Error {
   }
 }
 
+// КАСТОМНЫЙ INSTANCE НАД FETCH
 // Работает только с useQuery (meta автоматически передается в fetchApiInstance)
 // тут работает механизм каррирования
 export const fetchApiInstanceWithMeta =
@@ -25,10 +26,24 @@ export const fetchApiInstanceWithMeta =
     return data;
   };
 
-// Без каррирования
-export const fetchApiInstance = async <T>(url: string, init?: RequestInit) => {
+// Без каррирования (для query и mutation)
+export const fetchApiInstance = async <T>(
+  url: string,
+  init?: RequestInit & { json?: unknown }
+) => {
+  let headers = init?.headers ?? {};
+
+  if (init?.json) {
+    headers = {
+      "Content-Type": "application/json",
+      ...headers,
+    };
+
+    init.body = JSON.stringify(init.json);
+  }
   const response = await fetch(`${BASE_URL}${url}`, {
     ...init,
+    ...headers,
   });
 
   if (!response.ok) {
