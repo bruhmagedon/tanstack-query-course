@@ -2,10 +2,13 @@ import { Input } from "@/shared/ui/input";
 import { useTodoList } from "../utils/use-todo-list";
 import { Button } from "@/shared/ui/button";
 import { useCreateTodo } from "../utils/use-create-todo";
+import { useDeleteTodo } from "../utils/use-delete-todo";
+import { XIcon } from "lucide-react";
 
 export const InfiniteTodoList = () => {
   const { error, todoItems, isLoading } = useTodoList();
   const createTodo = useCreateTodo();
+  const deleteTodo = useDeleteTodo();
 
   if (isLoading) {
     return <div> Загрузка </div>;
@@ -32,17 +35,26 @@ export const InfiniteTodoList = () => {
         {todoItems?.map((todo) => (
           <div
             key={todo.id}
-            className="flex gap-3 items-center bg-white p-3 rounded-md cursor-pointer"
+            className="flex gap-3 items-center justify-between bg-white p-3 rounded-md cursor-pointer"
           >
-            <button
-              type="button"
-              className={`${
-                todo.done ? "bg-green-300" : "bg-red-300"
-              } p-2.5 rounded-md font-medium`}
+            <div>
+              <button
+                type="button"
+                className={`${
+                  todo.done ? "bg-green-300" : "bg-red-300"
+                } p-2.5 rounded-md font-medium mr-3`}
+              >
+                {todo.done ? "Done" : "Nope"}
+              </button>{" "}
+              <p className="font-medium inline">{todo.text}</p>
+            </div>
+            <Button
+              disabled={deleteTodo.getIsPending(todo.id)}
+              variant={"destructive"}
+              onClick={() => deleteTodo.handleDelete(todo.id)}
             >
-              {todo.done ? "Done" : "Nope"}
-            </button>{" "}
-            {todo.text}
+              <XIcon />
+            </Button>
           </div>
         ))}
       </div>
